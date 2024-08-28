@@ -8,8 +8,12 @@ class AtividadeHandler with ChangeNotifier {
   List<Atividade> get atividades => _atividades;
 
   // Cria uma nova atividade
-  void addAtividade(String titulo, String descricao) {
-    _atividades.add(Atividade(titulo: titulo, descricao: descricao));
+  void addAtividade(String titulo, String descricao, Prioridade prioridade) {
+    _atividades.add(Atividade(
+      titulo: titulo, 
+      descricao: descricao,
+      prioridade: prioridade,
+    ));
     notifyListeners();
   }
 
