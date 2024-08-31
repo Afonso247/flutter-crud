@@ -18,10 +18,11 @@ class AtividadeHandler with ChangeNotifier {
   }
 
   // Atualiza uma atividade
-  void atualizarAtividade(String id, String titulo, String descricao) {
+  void atualizarAtividade(String id, String titulo, String descricao, Prioridade prioridade) {
     final atividade = _atividades.firstWhere((atividade) => atividade.id == id);
     atividade.titulo = titulo;
     atividade.descricao = descricao;
+    atividade.prioridade = prioridade;
     notifyListeners();
   }
 

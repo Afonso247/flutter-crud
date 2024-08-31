@@ -27,6 +27,20 @@ class AtividadeEdit extends StatelessWidget {
               controller: atividadeDescricaoController,
               decoration: const InputDecoration(labelText: 'Descrição'),
             ),
+            DropdownButton<Prioridade>(
+              value: atividade.prioridade,
+              onChanged: (Prioridade? novaPrioridade) {
+                if (novaPrioridade != null) {
+                  atividade.prioridade = novaPrioridade;
+                }
+              },
+              items: Prioridade.values.map((Prioridade prioridade) {
+                return DropdownMenuItem<Prioridade>(
+                  value: prioridade,
+                  child: Text(_toTitleCase(prioridade.toString().split('.').last)),
+                );
+              }).toList(),
+            ),
             ElevatedButton(
               onPressed: () {
                 final novoTitulo = atividadeTituloController.text;
@@ -34,7 +48,12 @@ class AtividadeEdit extends StatelessWidget {
 
                 if (novoTitulo.isNotEmpty && novaDescricao.isNotEmpty) {
                   Provider.of<AtividadeHandler>(context, listen: false)
-                    .atualizarAtividade(atividade.id, novoTitulo, novaDescricao);
+                    .atualizarAtividade(
+                      atividade.id, 
+                      novoTitulo, 
+                      novaDescricao,
+                      atividade.prioridade
+                    );
                 }
                 Navigator.of(context).pop();
               },
@@ -44,5 +63,11 @@ class AtividadeEdit extends StatelessWidget {
         ),
       ),
     );
+  }
+  
+  String _toTitleCase(String str) {
+    return str.toLowerCase().split(' ').map((word) {
+      return word.substring(0, 1).toUpperCase() + word.substring(1);
+    }).join(' ');
   }
 }
