@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:google_fonts/google_fonts.dart';
 import './handlers/atividade_handler.dart';
 import './components/home_atividade.dart';
 
@@ -37,7 +38,10 @@ class AtividadeApp extends StatelessWidget {
           centerTitle: true,
           elevation: 0
         ),
-        scaffoldBackgroundColor: Colors.grey[300],
+        scaffoldBackgroundColor: Colors.grey[200],
+        textTheme: GoogleFonts.poppinsTextTheme(
+          Theme.of(context).textTheme,
+        ),
       ),
       home: const HomeAtividade(),
     );

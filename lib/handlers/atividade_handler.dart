@@ -8,16 +8,21 @@ class AtividadeHandler with ChangeNotifier {
   List<Atividade> get atividades => _atividades;
 
   // Cria uma nova atividade
-  void addAtividade(String titulo, String descricao) {
-    _atividades.add(Atividade(titulo: titulo, descricao: descricao));
+  void addAtividade(String titulo, String descricao, Prioridade prioridade) {
+    _atividades.add(Atividade(
+      titulo: titulo, 
+      descricao: descricao,
+      prioridade: prioridade,
+    ));
     notifyListeners();
   }
 
   // Atualiza uma atividade
-  void atualizarAtividade(String id, String titulo, String descricao) {
+  void atualizarAtividade(String id, String titulo, String descricao, Prioridade prioridade) {
     final atividade = _atividades.firstWhere((atividade) => atividade.id == id);
     atividade.titulo = titulo;
     atividade.descricao = descricao;
+    atividade.prioridade = prioridade;
     notifyListeners();
   }
 
