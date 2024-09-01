@@ -1,5 +1,6 @@
 import 'package:app_flutter/model/atividade.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../handlers/atividade_handler.dart';
 import '../components/atividade_edit.dart';
@@ -21,47 +22,64 @@ class _HomeAtividadeState extends State<HomeAtividade> {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Atividade Manager')),
-      body: ListView.builder(
-        itemCount: atividades.length,
-        itemBuilder: (context, index) {
-          final atividade = atividades[index];
-          return Opacity(
-            opacity: atividade.status ? 0.5 : 1.0,
-            child: Container(
-              color: _getPrioridadeColor(atividade.prioridade),
-              child: ListTile(
-                title: Text(
-                  atividade.titulo,
-                  style: TextStyle(
-                    decoration: atividade.status ? TextDecoration.lineThrough : null,
-                  ),
-                ),
-                subtitle: Text(atividade.descricao),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.edit),
-                      onPressed: () => Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) => AtividadeEdit(atividade: atividade),
-                        ),
+      body: ReorderableListView(
+        onReorder: (int oldIndex, int newIndex) {
+          setState(() {
+            if (newIndex > oldIndex) {
+              newIndex -= 1;
+            }
+            final atividade = atividades.removeAt(oldIndex);
+            atividades.insert(newIndex, atividade);
+          });
+        },
+        children: <Widget>[
+          for (int index = 0; index < atividades.length; index++)
+            Padding(
+              key: ValueKey(atividades[index].id),
+              padding: const EdgeInsets.symmetric(vertical: 2),
+              child: Container(
+                color: _getPrioridadeColor(atividades[index].prioridade),
+                child: Opacity(
+                  opacity: atividades[index].status ? 0.5 : 1.0,
+                  child: ListTile(
+                    title: Text(
+                      atividades[index].titulo,
+                      style: TextStyle(
+                        decoration: atividades[index].status ? TextDecoration.lineThrough : null,
                       ),
                     ),
-                    IconButton(
-                      icon: atividade.status ? const Icon(Icons.check_circle) : const Icon(Icons.check),
-                      onPressed: () => atividadeHandler.atualizarAtividadeStatus(atividade.id),
+                    subtitle: Text(
+                      atividades[index].descricao,
+                      style: TextStyle(
+                        decoration: atividades[index].status ? TextDecoration.lineThrough : null,
+                      ),
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.close),
-                      onPressed: () => atividadeHandler.removerAtividade(atividade.id),
-                    )
-                  ],
-                ),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.edit),
+                          onPressed: () => Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) => AtividadeEdit(atividade: atividades[index]),
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          icon: atividades[index].status ? const Icon(Icons.check_circle) : const Icon(Icons.check),
+                          onPressed: () => atividadeHandler.atualizarAtividadeStatus(atividades[index].id),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.close),
+                          onPressed: () => atividadeHandler.removerAtividade(atividades[index].id),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
               ),
             ),
-          );
-        },
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _abrirAddAtividadeDialog(context),
@@ -86,53 +104,75 @@ class _HomeAtividadeState extends State<HomeAtividade> {
   }
 
   void _abrirAddAtividadeDialog(BuildContext context) {
+    final _formKey = GlobalKey<FormState>();
+    final tituloAtividadeController = TextEditingController();
+    final descricaoAtividadeController = TextEditingController();
+
     showDialog(
       context: context,
       builder: (context) {
-        final tituloAtividadeController = TextEditingController();
-        final descricaoAtividadeController = TextEditingController();
-
         return StatefulBuilder(
           builder: (context, setState) {
             return AlertDialog(
               title: const Text('Adicionar Atividade'),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  TextField(
-                    controller: tituloAtividadeController,
-                    decoration: const InputDecoration(labelText: 'Título'),
-                  ),
-                  TextField(
-                    controller: descricaoAtividadeController,
-                    decoration: const InputDecoration(labelText: 'Descrição'),
-                  ),
-                  const SizedBox(height: 16),
-                  Column(
-                    children: [
-                      const Text(
-                        'Prioridade',
-                        style: TextStyle(fontSize: 16),
-                      ),
-                      DropdownButton<Prioridade>(
-                        value: prioridadeSel,
-                        onChanged: (Prioridade? novaPrioridade) {
-                          if (novaPrioridade != null) {
-                            setState(() {
-                              prioridadeSel = novaPrioridade;
-                            });
-                          }
-                        },
-                        items: Prioridade.values.map((Prioridade prioridade) {
-                          return DropdownMenuItem<Prioridade>(
-                            value: prioridade,
-                            child: Text(_toTitleCase(prioridade.toString().split('.').last)),
-                          );
-                        }).toList(),
-                      ),
-                    ],
-                  ),
-                ],
+              content: Form(
+                key: _formKey, // Chave para o formulário
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextFormField(
+                      controller: tituloAtividadeController,
+                      decoration: const InputDecoration(labelText: 'Título'),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'O título não pode estar vazio';
+                        }
+                        return null;
+                      },
+                      inputFormatters: [
+                        LengthLimitingTextInputFormatter(15),
+                      ],
+                    ),
+                    TextFormField(
+                      controller: descricaoAtividadeController,
+                      decoration: const InputDecoration(labelText: 'Descrição'),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'A descrição não pode estar vazia';
+                        }
+                        return null;
+                      },
+                      inputFormatters: [
+                        LengthLimitingTextInputFormatter(100),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Column(
+                      children: [
+                        const Text(
+                          'Prioridade',
+                          style: TextStyle(fontSize: 16),
+                        ),
+                        DropdownButton<Prioridade>(
+                          value: prioridadeSel,
+                          onChanged: (Prioridade? novaPrioridade) {
+                            if (novaPrioridade != null) {
+                              setState(() {
+                                prioridadeSel = novaPrioridade;
+                              });
+                            }
+                          },
+                          items: Prioridade.values.map((Prioridade prioridade) {
+                            return DropdownMenuItem<Prioridade>(
+                              value: prioridade,
+                              child: Text(_toTitleCase(prioridade.toString().split('.').last)),
+                            );
+                          }).toList(),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
               actions: [
                 TextButton(
@@ -141,18 +181,19 @@ class _HomeAtividadeState extends State<HomeAtividade> {
                 ),
                 TextButton(
                   onPressed: () {
-                    final titulo = tituloAtividadeController.text;
-                    final descricao = descricaoAtividadeController.text;
+                    if (_formKey.currentState!.validate()) {
+                      // Se o formulário for válido, adicione a atividade
+                      final titulo = tituloAtividadeController.text;
+                      final descricao = descricaoAtividadeController.text;
 
-                    if (titulo.isNotEmpty && descricao.isNotEmpty) {
                       Provider.of<AtividadeHandler>(context, listen: false).addAtividade(
                         titulo,
                         descricao,
                         prioridadeSel,
                       );
-                    }
 
-                    Navigator.of(context).pop();
+                      Navigator.of(context).pop();
+                    }
                   },
                   child: const Text('Adicionar'),
                 ),

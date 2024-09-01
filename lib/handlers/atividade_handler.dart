@@ -39,4 +39,14 @@ class AtividadeHandler with ChangeNotifier {
     notifyListeners();
   }
 
+  // Reordena as atividades
+  void reordenarAtividades(int oldIndex, int newIndex) {
+    if (oldIndex < newIndex) {
+      newIndex -= 1; // Ajusta o índice para a movimentação correta
+    }
+    final atividade = _atividades.removeAt(oldIndex); // Remove a atividade do índice antigo
+    _atividades.insert(newIndex, atividade); // Insere a atividade no novo índice
+    notifyListeners();
+  }
+
 }

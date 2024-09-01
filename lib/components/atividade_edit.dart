@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../handlers/atividade_handler.dart';
 import '../model/atividade.dart';
@@ -9,13 +10,14 @@ class AtividadeEdit extends StatefulWidget {
   const AtividadeEdit({super.key, required this.atividade});
 
   @override
-  _AtividadeEditState createState() => _AtividadeEditState();
+  AtividadeEditState createState() => AtividadeEditState();
 }
 
-class _AtividadeEditState extends State<AtividadeEdit> {
+class AtividadeEditState extends State<AtividadeEdit> {
   late TextEditingController atividadeTituloController;
   late TextEditingController atividadeDescricaoController;
   late Prioridade prioridadeSel;
+  final _formKey = GlobalKey<FormState>(); // Chave para o formulário
 
   @override
   void initState() {
@@ -31,56 +33,77 @@ class _AtividadeEditState extends State<AtividadeEdit> {
       appBar: AppBar(title: const Text('Editar Atividade')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            TextField(
-              controller: atividadeTituloController,
-              decoration: const InputDecoration(labelText: 'Título'),
-            ),
-            TextField(
-              controller: atividadeDescricaoController,
-              decoration: const InputDecoration(labelText: 'Descrição'),
-            ),
-            DropdownButton<Prioridade>(
-              value: prioridadeSel,
-              onChanged: (Prioridade? novaPrioridade) {
-                if (novaPrioridade != null) {
-                  setState(() {
-                    prioridadeSel = novaPrioridade;
-                  });
-                }
-              },
-              items: Prioridade.values.map((Prioridade prioridade) {
-                return DropdownMenuItem<Prioridade>(
-                  value: prioridade,
-                  child: Text(_toTitleCase(prioridade.toString().split('.').last)),
-                );
-              }).toList(),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                final novoTitulo = atividadeTituloController.text;
-                final novaDescricao = atividadeDescricaoController.text;
-
-                if (novoTitulo.isNotEmpty && novaDescricao.isNotEmpty) {
-                  Provider.of<AtividadeHandler>(context, listen: false)
-                    .atualizarAtividade(
-                      widget.atividade.id, 
-                      novoTitulo, 
+        child: Form(
+          key: _formKey, // Associar a chave do formulário
+          child: Column(
+            children: [
+              TextFormField(
+                controller: atividadeTituloController,
+                decoration: const InputDecoration(labelText: 'Título'),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'O título não pode estar vazio';
+                  }
+                  return null;
+                },
+                inputFormatters: [
+                  LengthLimitingTextInputFormatter(15),
+                ],
+              ),
+              TextFormField(
+                controller: atividadeDescricaoController,
+                decoration: const InputDecoration(labelText: 'Descrição'),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'A descrição não pode estar vazia';
+                  }
+                  return null;
+                },
+                inputFormatters: [
+                  LengthLimitingTextInputFormatter(100),
+                ],
+              ),
+              DropdownButton<Prioridade>(
+                value: prioridadeSel,
+                onChanged: (Prioridade? novaPrioridade) {
+                  if (novaPrioridade != null) {
+                    setState(() {
+                      prioridadeSel = novaPrioridade;
+                    });
+                  }
+                },
+                items: Prioridade.values.map((Prioridade prioridade) {
+                  return DropdownMenuItem<Prioridade>(
+                    value: prioridade,
+                    child: Text(_toTitleCase(prioridade.toString().split('.').last)),
+                  );
+                }).toList(),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  if (_formKey.currentState!.validate()) {
+                    // Se o formulário for válido, atualize a atividade
+                    final novoTitulo = atividadeTituloController.text;
+                    final novaDescricao = atividadeDescricaoController.text;
+                    Provider.of<AtividadeHandler>(context, listen: false)
+                        .atualizarAtividade(
+                      widget.atividade.id,
+                      novoTitulo,
                       novaDescricao,
-                      prioridadeSel
+                      prioridadeSel,
                     );
-                }
-                Navigator.of(context).pop();
-              },
-              child: const Text('Salvar'),
-            ),
-          ],
+                    Navigator.of(context).pop();
+                  }
+                },
+                child: const Text('Salvar'),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
-  
+
   String _toTitleCase(String str) {
     return str.toLowerCase().split(' ').map((word) {
       return word.substring(0, 1).toUpperCase() + word.substring(1);
