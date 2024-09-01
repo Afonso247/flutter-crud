@@ -4,11 +4,17 @@ import 'package:provider/provider.dart';
 import '../handlers/atividade_handler.dart';
 import '../components/atividade_edit.dart';
 
-class HomeAtividade extends StatelessWidget {
+class HomeAtividade extends StatefulWidget {
   const HomeAtividade({super.key});
 
   @override
+  _HomeAtividadeState createState() => _HomeAtividadeState();
+}
 
+class _HomeAtividadeState extends State<HomeAtividade> {
+  Prioridade prioridadeSel = Prioridade.baixa; // Estado para o valor do dropdown
+
+  @override
   Widget build(BuildContext context) {
     final atividadeHandler = Provider.of<AtividadeHandler>(context);
     final atividades = atividadeHandler.atividades;
@@ -85,69 +91,74 @@ class HomeAtividade extends StatelessWidget {
       builder: (context) {
         final tituloAtividadeController = TextEditingController();
         final descricaoAtividadeController = TextEditingController();
-        Prioridade prioridadeSel = Prioridade.baixa;
 
-        return AlertDialog(
-          title: const Text('Adicionar Atividade'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: tituloAtividadeController,
-                decoration: const InputDecoration(labelText: 'Título'),
-              ),
-              TextField(
-                controller: descricaoAtividadeController,
-                decoration: const InputDecoration(labelText: 'Descrição'),
-              ),
-              const SizedBox(height: 16),
-              Column(
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text('Adicionar Atividade'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text(
-                    'Prioridade',
-                    style: TextStyle(fontSize: 16),
+                  TextField(
+                    controller: tituloAtividadeController,
+                    decoration: const InputDecoration(labelText: 'Título'),
                   ),
-                  DropdownButton<Prioridade>(
-                    value: prioridadeSel,
-                    onChanged: (Prioridade? novaPrioridade) {
-                      if (novaPrioridade != null) {
-                        prioridadeSel = novaPrioridade;
-                      }
-                    },
-                    items: Prioridade.values.map((Prioridade prioridade) {
-                      return DropdownMenuItem<Prioridade>(
-                        value: prioridade,
-                        child: Text(_toTitleCase(prioridade.toString().split('.').last)),
-                      );
-                    }).toList(),
+                  TextField(
+                    controller: descricaoAtividadeController,
+                    decoration: const InputDecoration(labelText: 'Descrição'),
+                  ),
+                  const SizedBox(height: 16),
+                  Column(
+                    children: [
+                      const Text(
+                        'Prioridade',
+                        style: TextStyle(fontSize: 16),
+                      ),
+                      DropdownButton<Prioridade>(
+                        value: prioridadeSel,
+                        onChanged: (Prioridade? novaPrioridade) {
+                          if (novaPrioridade != null) {
+                            setState(() {
+                              prioridadeSel = novaPrioridade;
+                            });
+                          }
+                        },
+                        items: Prioridade.values.map((Prioridade prioridade) {
+                          return DropdownMenuItem<Prioridade>(
+                            value: prioridade,
+                            child: Text(_toTitleCase(prioridade.toString().split('.').last)),
+                          );
+                        }).toList(),
+                      ),
+                    ],
                   ),
                 ],
-              )
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancelar'),
-            ),
-            TextButton(
-              onPressed: () {
-                final titulo = tituloAtividadeController.text;
-                final descricao = descricaoAtividadeController.text;
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Cancelar'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    final titulo = tituloAtividadeController.text;
+                    final descricao = descricaoAtividadeController.text;
 
-                if (titulo.isNotEmpty && descricao.isNotEmpty) {
-                  Provider.of<AtividadeHandler>(context, listen: false).addAtividade(
-                    titulo, 
-                    descricao,
-                    prioridadeSel
-                    );
-                }
+                    if (titulo.isNotEmpty && descricao.isNotEmpty) {
+                      Provider.of<AtividadeHandler>(context, listen: false).addAtividade(
+                        titulo,
+                        descricao,
+                        prioridadeSel,
+                      );
+                    }
 
-                Navigator.of(context).pop();
-              },
-              child: const Text('Adicionar'),
-            ),
-          ],
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('Adicionar'),
+                ),
+              ],
+            );
+          },
         );
       },
     );

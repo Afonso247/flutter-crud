@@ -3,16 +3,30 @@ import 'package:provider/provider.dart';
 import '../handlers/atividade_handler.dart';
 import '../model/atividade.dart';
 
-class AtividadeEdit extends StatelessWidget {
+class AtividadeEdit extends StatefulWidget {
   final Atividade atividade;
 
   const AtividadeEdit({super.key, required this.atividade});
 
   @override
-  Widget build(BuildContext context) {
-    final atividadeTituloController = TextEditingController(text: atividade.titulo);
-    final atividadeDescricaoController = TextEditingController(text: atividade.descricao);
+  _AtividadeEditState createState() => _AtividadeEditState();
+}
 
+class _AtividadeEditState extends State<AtividadeEdit> {
+  late TextEditingController atividadeTituloController;
+  late TextEditingController atividadeDescricaoController;
+  late Prioridade prioridadeSel;
+
+  @override
+  void initState() {
+    super.initState();
+    atividadeTituloController = TextEditingController(text: widget.atividade.titulo);
+    atividadeDescricaoController = TextEditingController(text: widget.atividade.descricao);
+    prioridadeSel = widget.atividade.prioridade;
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Editar Atividade')),
       body: Padding(
@@ -28,10 +42,12 @@ class AtividadeEdit extends StatelessWidget {
               decoration: const InputDecoration(labelText: 'Descrição'),
             ),
             DropdownButton<Prioridade>(
-              value: atividade.prioridade,
+              value: prioridadeSel,
               onChanged: (Prioridade? novaPrioridade) {
                 if (novaPrioridade != null) {
-                  atividade.prioridade = novaPrioridade;
+                  setState(() {
+                    prioridadeSel = novaPrioridade;
+                  });
                 }
               },
               items: Prioridade.values.map((Prioridade prioridade) {
@@ -49,10 +65,10 @@ class AtividadeEdit extends StatelessWidget {
                 if (novoTitulo.isNotEmpty && novaDescricao.isNotEmpty) {
                   Provider.of<AtividadeHandler>(context, listen: false)
                     .atualizarAtividade(
-                      atividade.id, 
+                      widget.atividade.id, 
                       novoTitulo, 
                       novaDescricao,
-                      atividade.prioridade
+                      prioridadeSel
                     );
                 }
                 Navigator.of(context).pop();
