@@ -21,22 +21,29 @@ class _HomeAtividadeState extends State<HomeAtividade> {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Atividade Manager')),
-      body: ListView.builder(
-        itemCount: atividades.length,
-        itemBuilder: (context, index) {
-          final atividade = atividades[index];
-          return Opacity(
-            opacity: atividade.status ? 0.5 : 1.0,
-            child: Container(
-              color: _getPrioridadeColor(atividade.prioridade),
+      body: ReorderableListView(
+        onReorder: (int oldIndex, int newIndex) {
+          setState(() {
+            if (newIndex > oldIndex) {
+              newIndex -= 1;
+            }
+            final atividade = atividades.removeAt(oldIndex);
+            atividades.insert(newIndex, atividade);
+          });
+        },
+        children: <Widget>[
+          for (int index = 0; index < atividades.length; index++)
+            Container(
+              key: ValueKey(atividades[index].id), // Chave única para cada item
+              color: _getPrioridadeColor(atividades[index].prioridade),
               child: ListTile(
                 title: Text(
-                  atividade.titulo,
+                  atividades[index].titulo,
                   style: TextStyle(
-                    decoration: atividade.status ? TextDecoration.lineThrough : null,
+                    decoration: atividades[index].status ? TextDecoration.lineThrough : null,
                   ),
                 ),
-                subtitle: Text(atividade.descricao),
+                subtitle: Text(atividades[index].descricao),
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -44,24 +51,23 @@ class _HomeAtividadeState extends State<HomeAtividade> {
                       icon: const Icon(Icons.edit),
                       onPressed: () => Navigator.of(context).push(
                         MaterialPageRoute(
-                          builder: (context) => AtividadeEdit(atividade: atividade),
+                          builder: (context) => AtividadeEdit(atividade: atividades[index]),
                         ),
                       ),
                     ),
                     IconButton(
-                      icon: atividade.status ? const Icon(Icons.check_circle) : const Icon(Icons.check),
-                      onPressed: () => atividadeHandler.atualizarAtividadeStatus(atividade.id),
+                      icon: atividades[index].status ? const Icon(Icons.check_circle) : const Icon(Icons.check),
+                      onPressed: () => atividadeHandler.atualizarAtividadeStatus(atividades[index].id),
                     ),
                     IconButton(
                       icon: const Icon(Icons.close),
-                      onPressed: () => atividadeHandler.removerAtividade(atividade.id),
+                      onPressed: () => atividadeHandler.removerAtividade(atividades[index].id),
                     )
                   ],
                 ),
               ),
             ),
-          );
-        },
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _abrirAddAtividadeDialog(context),
