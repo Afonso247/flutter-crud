@@ -98,53 +98,69 @@ class _HomeAtividadeState extends State<HomeAtividade> {
   }
 
   void _abrirAddAtividadeDialog(BuildContext context) {
+    final _formKey = GlobalKey<FormState>();
+    final tituloAtividadeController = TextEditingController();
+    final descricaoAtividadeController = TextEditingController();
+
     showDialog(
       context: context,
       builder: (context) {
-        final tituloAtividadeController = TextEditingController();
-        final descricaoAtividadeController = TextEditingController();
-
         return StatefulBuilder(
           builder: (context, setState) {
             return AlertDialog(
               title: const Text('Adicionar Atividade'),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  TextField(
-                    controller: tituloAtividadeController,
-                    decoration: const InputDecoration(labelText: 'Título'),
-                  ),
-                  TextField(
-                    controller: descricaoAtividadeController,
-                    decoration: const InputDecoration(labelText: 'Descrição'),
-                  ),
-                  const SizedBox(height: 16),
-                  Column(
-                    children: [
-                      const Text(
-                        'Prioridade',
-                        style: TextStyle(fontSize: 16),
-                      ),
-                      DropdownButton<Prioridade>(
-                        value: prioridadeSel,
-                        onChanged: (Prioridade? novaPrioridade) {
-                          if (novaPrioridade != null) {
-                            setState(() {
-                              prioridadeSel = novaPrioridade;
-                            });
-                          }
-                        },
-                        items: Prioridade.values.map((Prioridade prioridade) {
-                          return DropdownMenuItem<Prioridade>(
-                            value: prioridade,
-                            child: Text(_toTitleCase(prioridade.toString().split('.').last)),
-                          );
-                        }).toList(),
-                      ),
-                    ],
-                  ),
-                ],
+              content: Form(
+                key: _formKey, // Chave para o formulário
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextFormField(
+                      controller: tituloAtividadeController,
+                      decoration: const InputDecoration(labelText: 'Título'),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'O título não pode estar vazio';
+                        }
+                        return null;
+                      },
+                    ),
+                    TextFormField(
+                      controller: descricaoAtividadeController,
+                      decoration: const InputDecoration(labelText: 'Descrição'),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'A descrição não pode estar vazia';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    Column(
+                      children: [
+                        const Text(
+                          'Prioridade',
+                          style: TextStyle(fontSize: 16),
+                        ),
+                        DropdownButton<Prioridade>(
+                          value: prioridadeSel,
+                          onChanged: (Prioridade? novaPrioridade) {
+                            if (novaPrioridade != null) {
+                              setState(() {
+                                prioridadeSel = novaPrioridade;
+                              });
+                            }
+                          },
+                          items: Prioridade.values.map((Prioridade prioridade) {
+                            return DropdownMenuItem<Prioridade>(
+                              value: prioridade,
+                              child: Text(_toTitleCase(prioridade.toString().split('.').last)),
+                            );
+                          }).toList(),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
               actions: [
                 TextButton(
@@ -153,18 +169,19 @@ class _HomeAtividadeState extends State<HomeAtividade> {
                 ),
                 TextButton(
                   onPressed: () {
-                    final titulo = tituloAtividadeController.text;
-                    final descricao = descricaoAtividadeController.text;
+                    if (_formKey.currentState!.validate()) {
+                      // Se o formulário for válido, adicione a atividade
+                      final titulo = tituloAtividadeController.text;
+                      final descricao = descricaoAtividadeController.text;
 
-                    if (titulo.isNotEmpty && descricao.isNotEmpty) {
                       Provider.of<AtividadeHandler>(context, listen: false).addAtividade(
                         titulo,
                         descricao,
                         prioridadeSel,
                       );
-                    }
 
-                    Navigator.of(context).pop();
+                      Navigator.of(context).pop();
+                    }
                   },
                   child: const Text('Adicionar'),
                 ),
