@@ -1,5 +1,6 @@
 import 'package:app_flutter/model/atividade.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../handlers/atividade_handler.dart';
 import '../components/atividade_edit.dart';
@@ -47,7 +48,12 @@ class _HomeAtividadeState extends State<HomeAtividade> {
                         decoration: atividades[index].status ? TextDecoration.lineThrough : null,
                       ),
                     ),
-                    subtitle: Text(atividades[index].descricao),
+                    subtitle: Text(
+                      atividades[index].descricao,
+                      style: TextStyle(
+                        decoration: atividades[index].status ? TextDecoration.lineThrough : null,
+                      ),
+                    ),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -123,6 +129,9 @@ class _HomeAtividadeState extends State<HomeAtividade> {
                         }
                         return null;
                       },
+                      inputFormatters: [
+                        LengthLimitingTextInputFormatter(15),
+                      ],
                     ),
                     TextFormField(
                       controller: descricaoAtividadeController,
@@ -133,6 +142,9 @@ class _HomeAtividadeState extends State<HomeAtividade> {
                         }
                         return null;
                       },
+                      inputFormatters: [
+                        LengthLimitingTextInputFormatter(100),
+                      ],
                     ),
                     const SizedBox(height: 16),
                     Column(

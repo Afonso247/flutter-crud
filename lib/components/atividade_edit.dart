@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../handlers/atividade_handler.dart';
 import '../model/atividade.dart';
@@ -45,6 +46,9 @@ class AtividadeEditState extends State<AtividadeEdit> {
                   }
                   return null;
                 },
+                inputFormatters: [
+                  LengthLimitingTextInputFormatter(15),
+                ],
               ),
               TextFormField(
                 controller: atividadeDescricaoController,
@@ -55,6 +59,9 @@ class AtividadeEditState extends State<AtividadeEdit> {
                   }
                   return null;
                 },
+                inputFormatters: [
+                  LengthLimitingTextInputFormatter(100),
+                ],
               ),
               DropdownButton<Prioridade>(
                 value: prioridadeSel,
