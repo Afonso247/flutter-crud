@@ -1,3 +1,3 @@
 # app_flutter
 
-A new Flutter project.
+Meu primeiro Projeto em Flutter, envolvendo um simples CRUD de listagem de atividades.
