@@ -33,38 +33,44 @@ class _HomeAtividadeState extends State<HomeAtividade> {
         },
         children: <Widget>[
           for (int index = 0; index < atividades.length; index++)
-            Container(
-              key: ValueKey(atividades[index].id), // Chave única para cada item
-              color: _getPrioridadeColor(atividades[index].prioridade),
-              child: ListTile(
-                title: Text(
-                  atividades[index].titulo,
-                  style: TextStyle(
-                    decoration: atividades[index].status ? TextDecoration.lineThrough : null,
-                  ),
-                ),
-                subtitle: Text(atividades[index].descricao),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.edit),
-                      onPressed: () => Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) => AtividadeEdit(atividade: atividades[index]),
-                        ),
+            Padding(
+              key: ValueKey(atividades[index].id),
+              padding: const EdgeInsets.symmetric(vertical: 2),
+              child: Container(
+                color: _getPrioridadeColor(atividades[index].prioridade),
+                child: Opacity(
+                  opacity: atividades[index].status ? 0.5 : 1.0,
+                  child: ListTile(
+                    title: Text(
+                      atividades[index].titulo,
+                      style: TextStyle(
+                        decoration: atividades[index].status ? TextDecoration.lineThrough : null,
                       ),
                     ),
-                    IconButton(
-                      icon: atividades[index].status ? const Icon(Icons.check_circle) : const Icon(Icons.check),
-                      onPressed: () => atividadeHandler.atualizarAtividadeStatus(atividades[index].id),
+                    subtitle: Text(atividades[index].descricao),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.edit),
+                          onPressed: () => Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) => AtividadeEdit(atividade: atividades[index]),
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          icon: atividades[index].status ? const Icon(Icons.check_circle) : const Icon(Icons.check),
+                          onPressed: () => atividadeHandler.atualizarAtividadeStatus(atividades[index].id),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.close),
+                          onPressed: () => atividadeHandler.removerAtividade(atividades[index].id),
+                        ),
+                      ],
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.close),
-                      onPressed: () => atividadeHandler.removerAtividade(atividades[index].id),
-                    )
-                  ],
-                ),
+                  ),
+                )
               ),
             ),
         ],
