@@ -42,17 +42,30 @@ class _HomeAtividadeState extends State<HomeAtividade> {
                 child: Opacity(
                   opacity: atividades[index].status ? 0.5 : 1.0,
                   child: ListTile(
+                    leading: _getCategoriaIcon(atividades[index].categoria),
                     title: Text(
                       atividades[index].titulo,
                       style: TextStyle(
                         decoration: atividades[index].status ? TextDecoration.lineThrough : null,
                       ),
                     ),
-                    subtitle: Text(
-                      atividades[index].descricao,
-                      style: TextStyle(
-                        decoration: atividades[index].status ? TextDecoration.lineThrough : null,
-                      ),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          atividades[index].descricao,
+                          style: TextStyle(
+                            decoration: atividades[index].status ? TextDecoration.lineThrough : null,
+                          ),
+                        ),
+                        Text(
+                          'Categoria: ${_toTitleCase(atividades[index].categoria.toString().split('.').last)}',
+                          style: const TextStyle(
+                            fontStyle: FontStyle.italic,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
                     ),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -103,10 +116,35 @@ class _HomeAtividadeState extends State<HomeAtividade> {
     }
   }
 
+  Widget _getCategoriaIcon(Categoria categoria) {
+    IconData iconData;
+    switch (categoria) {
+      case Categoria.trabalho:
+        iconData = Icons.work;
+        break;
+      case Categoria.estudo:
+        iconData = Icons.school;
+        break;
+      case Categoria.lazer:
+        iconData = Icons.beach_access;
+        break;
+      case Categoria.saude:
+        iconData = Icons.favorite;
+        break;
+      case Categoria.outros:
+      default:
+        iconData = Icons.category;
+        break;
+    }
+    return Icon(iconData);
+  }
+
   void _abrirAddAtividadeDialog(BuildContext context) {
     final _formKey = GlobalKey<FormState>();
     final tituloAtividadeController = TextEditingController();
     final descricaoAtividadeController = TextEditingController();
+    Prioridade prioridadeSel = Prioridade.baixa;
+    Categoria categoriaSel = Categoria.outros;
 
     showDialog(
       context: context,
@@ -171,6 +209,31 @@ class _HomeAtividadeState extends State<HomeAtividade> {
                         ),
                       ],
                     ),
+                    const SizedBox(height: 16),
+                    Column(
+                      children: [
+                        const Text(
+                          'Categoria',
+                          style: TextStyle(fontSize: 16),
+                        ),
+                        DropdownButton<Categoria>(
+                          value: categoriaSel,
+                          onChanged: (Categoria? novaCategoria) {
+                            if (novaCategoria != null) {
+                              setState(() {
+                                categoriaSel = novaCategoria;
+                              });
+                            }
+                          },
+                          items: Categoria.values.map((Categoria categoria) {
+                            return DropdownMenuItem<Categoria>(
+                              value: categoria,
+                              child: Text(_toTitleCase(categoria.toString().split('.').last)),
+                            );
+                          }).toList(),
+                        ),
+                      ],
+                    ),
                   ],
                 ),
               ),
@@ -190,6 +253,7 @@ class _HomeAtividadeState extends State<HomeAtividade> {
                         titulo,
                         descricao,
                         prioridadeSel,
+                        categoriaSel,
                       );
 
                       Navigator.of(context).pop();
