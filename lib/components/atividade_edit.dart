@@ -17,6 +17,7 @@ class AtividadeEditState extends State<AtividadeEdit> {
   late TextEditingController atividadeTituloController;
   late TextEditingController atividadeDescricaoController;
   late Prioridade prioridadeSel;
+  late Categoria categoriaSel;
   final _formKey = GlobalKey<FormState>(); // Chave para o formulário
 
   @override
@@ -25,6 +26,7 @@ class AtividadeEditState extends State<AtividadeEdit> {
     atividadeTituloController = TextEditingController(text: widget.atividade.titulo);
     atividadeDescricaoController = TextEditingController(text: widget.atividade.descricao);
     prioridadeSel = widget.atividade.prioridade;
+    categoriaSel = widget.atividade.categoria;
   }
 
   @override
@@ -79,6 +81,22 @@ class AtividadeEditState extends State<AtividadeEdit> {
                   );
                 }).toList(),
               ),
+              DropdownButton<Categoria>(
+                value: categoriaSel,
+                onChanged: (Categoria? novaCategoria) {
+                  if (novaCategoria != null) {
+                    setState(() {
+                      categoriaSel = novaCategoria;
+                    });
+                  }
+                },
+                items: Categoria.values.map((Categoria categoria) {
+                  return DropdownMenuItem<Categoria>(
+                    value: categoria,
+                    child: Text(_toTitleCase(categoria.toString().split('.').last)),
+                  );
+                }).toList(),
+              ),
               ElevatedButton(
                 onPressed: () {
                   if (_formKey.currentState!.validate()) {
@@ -91,6 +109,7 @@ class AtividadeEditState extends State<AtividadeEdit> {
                       novoTitulo,
                       novaDescricao,
                       prioridadeSel,
+                      categoriaSel,
                     );
                     Navigator.of(context).pop();
                   }
